@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../../components/Inputs/Input";
 import { validateEmail } from "../../utils/helper";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPaths";
+import { UserContext } from "../../context/userContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -38,6 +40,7 @@ const Login = () => {
 
       if (token) {
         localStorage.setItem("token", token);
+        updateUser(response.data);
 
         // Rediret based on role
         if (role === "admin") {
@@ -57,8 +60,7 @@ const Login = () => {
   return (
     <AuthLayout>
       <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
-        <h3 className="text-xl font-semibold text-black">Welcome Back</h3>
-        <p className="text-xs text-slate-700 mt-[5px] mb-6">Please enter your details to login</p>
+        <h3 className="text-xl text-center font-semibold text-black mb-6">Sign in to your account</h3>
 
         <form onSubmit={handleLogin}>
           <Input value={email} onChange={({ target }) => setEmail(target.value)} label="Email Address" placeholder="email@example.com" type="text" />
@@ -66,8 +68,8 @@ const Login = () => {
 
           {error && <p className="text-xs pb-2.5 text-red-500">{error}</p>}
 
-          <button type="submit" className="btn-primary">
-            Login
+          <button type="submit" className="btn-gray">
+            Sign In
           </button>
 
           <p className="text-[13px] text-slate-800 mt-3">
