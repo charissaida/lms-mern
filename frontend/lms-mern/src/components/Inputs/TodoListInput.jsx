@@ -7,7 +7,7 @@ const TodoListInput = ({ todoList, setTodoList }) => {
   // Function to handel adding an option
   const handleAddOption = () => {
     if (option.trim() !== "") {
-      setTodoList([...todoList, option.trim]);
+      setTodoList([...todoList, option.trim()]);
       setOption("");
     }
   };

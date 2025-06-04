@@ -85,9 +85,9 @@ const Dashboard = () => {
 
           <InfoCard label="Pending Tasks" value={addThousandsSeparator(dashboardData?.charts?.taskDistribution?.Pending || 0)} color="bg-violet-500" />
 
-          <InfoCard label="In Progress Tasks" value={addThousandsSeparator(dashboardData?.charts?.taskDistribution?.Pending || 0)} color="bg-cyan-500" />
+          <InfoCard label="In Progress Tasks" value={addThousandsSeparator(dashboardData?.charts?.taskDistribution?.InProgress || 0)} color="bg-cyan-500" />
 
-          <InfoCard label="Completed Tasks" value={addThousandsSeparator(dashboardData?.charts?.taskDistribution?.Pending || 0)} color="bg-lime-500" />
+          <InfoCard label="Completed Tasks" value={addThousandsSeparator(dashboardData?.charts?.taskDistribution?.Completed || 0)} color="bg-lime-500" />
         </div>
       </div>
 
