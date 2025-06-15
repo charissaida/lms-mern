@@ -7,6 +7,7 @@ import { LuFileSpreadsheet } from "react-icons/lu";
 import TaskStatusTabs from "../../components/TaskStatusTabs";
 import TaskCard from "../../components/Cards/TaskCard";
 import toast from "react-hot-toast";
+import TaskCard2 from "../../components/Cards/TaskCard2";
 
 const ManageTasks = () => {
   const [allTasks, setAllTasks] = useState([]);
@@ -71,11 +72,11 @@ const ManageTasks = () => {
   }, [filterStatus]);
 
   return (
-    <DashboardLayout activeMenu="Manage Tasks">
+    <DashboardLayout activeMenu="Manage Courses">
       <div className="my-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl md:text-xl font-medium">My Tasks</h2>
+            <h2 className="text-xl md:text-xl font-medium">Air Dan Tumbuhan</h2>
 
             <button className="flex lg:hidden download-btn" onClick={handleDownloadReport}>
               <LuFileSpreadsheet className="text-lg" />
@@ -113,6 +114,39 @@ const ManageTasks = () => {
               onClick={() => handleClick(item)}
             />
           ))}
+        </div>
+        <div className="relative flex flex-col gap-6 mt-4 pl-4">
+          {allTasks?.map((item, index) => {
+            const isLocked = index > 0 && allTasks[index - 1].status !== "Completed";
+            const isCompleted = item.status === "Completed";
+            const isLast = index === allTasks.length - 1;
+
+            return (
+              <div key={item._id} className="flex">
+                {/* Lingkaran indikator */}
+                <div className="absolute mt-4">
+                  <div className={`w-8 h-8 rounded-full z-10 ${isCompleted ? "bg-blue-500" : "bg-gray-300"}`} />
+                  {!isLast && <div className={`ml-2.5 -mt-1 w-3 h-16 z-0 ${isCompleted ? "bg-blue-500" : "bg-gray-300"}`} />}
+                </div>
+                <div className="w-full ml-12">
+                  <TaskCard2
+                    title={item.title}
+                    description={item.description}
+                    status={item.status}
+                    createdAt={item.createdAt}
+                    assignedTo={item.assignedTo}
+                    attachmentCount={item.attachments?.length || 0}
+                    completedTodoCount={item.completedTodoCount || 0}
+                    onClick={() => {
+                      if (!isLocked) handleClick(item);
+                    }}
+                    isLocked={isLocked}
+                    isCompleted={isCompleted}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </DashboardLayout>

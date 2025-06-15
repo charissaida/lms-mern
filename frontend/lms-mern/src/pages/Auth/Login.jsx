@@ -59,7 +59,7 @@ const Login = () => {
   };
   return (
     <AuthLayout>
-      <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
+      <div className="lg:w-[70%] h-3/4 md:h-full bg-white rounded-2xl p-6 shadow-md flex flex-col justify-center">
         <h3 className="text-xl text-center font-semibold text-black mb-6">Sign in to your account</h3>
 
         <form onSubmit={handleLogin}>

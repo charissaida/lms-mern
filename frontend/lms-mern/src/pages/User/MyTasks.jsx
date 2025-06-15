@@ -49,10 +49,10 @@ const MyTasks = () => {
   }, [filterStatus]);
 
   return (
-    <DashboardLayout activeMenu="My Tasks">
+    <DashboardLayout activeMenu="Courses">
       <div className="my-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-          <h2 className="text-xl md:text-xl font-medium">My Tasks</h2>
+          <h2 className="text-xl md:text-xl font-medium">Courses</h2>
 
           {tabs?.[0]?.count > 0 && <TaskStatusTabs tabs={tabs} activeTab={filterStatus} setActiveTab={setFilterStatus} />}
         </div>

@@ -9,13 +9,13 @@ export const SIDE_MENU_DATA = [
   },
   {
     id: "02",
-    label: "Manage Tasks",
+    label: "Manage Courses",
     icon: LuClipboardCheck,
     path: "/admin/tasks",
   },
   {
     id: "03",
-    label: "Create Task",
+    label: "Create Course",
     icon: LuSquarePlus,
     path: "/admin/create-task",
   },
@@ -42,7 +42,7 @@ export const SIDE_MENU_USER_DATA = [
   },
   {
     id: "02",
-    label: "My Tasks",
+    label: "Courses",
     icon: LuClipboardCheck,
     path: "/user/tasks",
   },
@@ -50,7 +50,7 @@ export const SIDE_MENU_USER_DATA = [
     id: "03",
     label: "Logout",
     icon: LuLogOut,
-    path: "/logout",
+    type: "logout",
   },
 ];
 

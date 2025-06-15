@@ -12,6 +12,7 @@ import ViewTaskDetails from "./pages/User/ViewTaskDetails";
 import PrivateRoute from "./routes/PrivateRoute";
 import UserProvider, { UserContext } from "./context/userContext";
 import { Toaster } from "react-hot-toast";
+import LandingPage from "./pages/LandingPage";
 
 const App = () => {
   return (
@@ -31,7 +32,7 @@ const App = () => {
             </Route>
 
             {/* User */}
-            <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+            <Route element={<PrivateRoute allowedRoles={["user"]} />}>
               <Route path="/user/dashboard" element={<UserDashboard />} />
               <Route path="/user/tasks" element={<MyTasks />} />
               <Route path="/user/task-details/:id" element={<ViewTaskDetails />} />
@@ -60,11 +61,11 @@ export default App;
 const Root = () => {
   const { user, loading } = useContext(UserContext);
 
-  if (loading) return <Outlet />;
+  if (loading) return null;
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <LandingPage />;
   }
 
-  return user.role === "admin" ? <Navigate to="/admin/dashboard" /> : <Navigate to="/user/dashboard" />;
+  return user.role === "admin" ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/user/dashboard" replace />;
 };
