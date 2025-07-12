@@ -1,153 +1,161 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import { API_PATHS } from "../../utils/apiPaths";
 import axiosInstance from "../../utils/axiosInstance";
-import { LuFileSpreadsheet } from "react-icons/lu";
 import TaskStatusTabs from "../../components/TaskStatusTabs";
-import TaskCard from "../../components/Cards/TaskCard";
 import toast from "react-hot-toast";
-import TaskCard2 from "../../components/Cards/TaskCard2";
+import { Dialog } from "@headlessui/react";
+
+const taskTypes = ["Pretest", "Postest", "Grup Chat", "Mindmap", "Materi", "Refleksi", "LO/KBK", "E-Portofolio"];
 
 const ManageTasks = () => {
   const [allTasks, setAllTasks] = useState([]);
-
   const [tabs, setTabs] = useState([]);
   const [filterStatus, setFilterStatus] = useState("All");
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const getAllTasks = async () => {
     try {
-      const response = await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, {
-        params: { status: filterStatus === "All" ? "" : filterStatus },
-      });
-      setAllTasks(response.data?.tasks?.length > 0 ? response.data.tasks : []);
+      const [taskRes, mindmapRes, materialRes] = await Promise.all([
+        axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, {
+          params: { status: filterStatus === "All" ? "" : filterStatus },
+        }),
+        axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASK_MINDMAP),
+        axiosInstance.get(API_PATHS.TASKS.GET_MATERIALS),
+      ]);
 
-      // Map statusSummary data with fixed labels and order
-      const statusSummary = response.data?.statusSummary || {};
+      const tasks = taskRes.data?.tasks || [];
+      const mindmaps = mindmapRes.data || [];
+      const materials = materialRes.data || [];
 
-      const statusArray = [
-        { label: "All", count: statusSummary.all || 0 },
-        { label: "Pending", count: statusSummary.pendingTasks || 0 },
-        { label: "In Progress", count: statusSummary.inProgressTasks || 0 },
-        { label: "Completed", count: statusSummary.completedTasks || 0 },
+      const allData = [
+        ...tasks.map((t) => ({ ...t, taskType: "task" })),
+        ...mindmaps.map((m) => ({ ...m, taskType: "mindmap" })),
+        ...materials.map((m) => ({
+          ...m,
+          taskType: "material",
+          title: m.term || m.title,
+        })),
       ];
 
-      setTabs(statusArray);
+      const sorted = allData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      setAllTasks(sorted);
+
+      const summary = taskRes.data?.statusSummary || {};
+      setTabs([
+        { label: "All", count: summary.all || 0 },
+        { label: "Pending", count: summary.pendingTasks || 0 },
+        { label: "In Progress", count: summary.inProgressTasks || 0 },
+        { label: "Completed", count: summary.completedTasks || 0 },
+      ]);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching tasks:", error);
+      toast.error("Gagal memuat semua tugas");
     }
   };
 
-  const handleClick = (taskData) => {
-    navigate("/admin/create-task", { state: { taskId: taskData._id } });
-  };
-
-  // Download task report
-  const handleDownloadReport = async () => {
-    try {
-      const response = await axiosInstance.get(API_PATHS.REPORTS.EXPORT_TASK, {
-        responseType: "blob",
-      });
-
-      // Create a URL for the blob
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "tasks-report.xlsx");
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading report:", error);
-      toast.error("Error downloading report. Please try again.");
-    }
+  const handleCreateTask = (type) => {
+    setIsModalOpen(false);
+    navigate(`/admin/create-task/${type.toLowerCase()}`);
   };
 
   useEffect(() => {
-    getAllTasks(filterStatus);
-    return () => {};
+    getAllTasks();
   }, [filterStatus]);
 
   return (
     <DashboardLayout activeMenu="Manage Courses">
       <div className="my-5">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl md:text-xl font-medium">Air Dan Tumbuhan</h2>
-
-            <button className="flex lg:hidden download-btn" onClick={handleDownloadReport}>
-              <LuFileSpreadsheet className="text-lg" />
-              Download Report
-            </button>
-          </div>
-
-          {tabs?.[0]?.count > 0 && (
-            <div className="flex items-center gap-3">
-              <TaskStatusTabs tabs={tabs} activeTab={filterStatus} setActiveTab={setFilterStatus} />
-
-              <button className="hidden lg:flex download-btn" onClick={handleDownloadReport}>
-                <LuFileSpreadsheet className="text-lg" />
-                Download Report
-              </button>
-            </div>
-          )}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4">
+          <h2 className="text-xl font-medium">Manage Course</h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          {allTasks?.map((item, index) => (
-            <TaskCard
-              key={item._id}
-              title={item.title}
-              description={item.description}
-              priority={item.priority}
-              status={item.status}
-              progress={item.progress}
-              createdAt={item.createdAt}
-              dueDate={item.dueDate}
-              assignedTo={item.assignedTo}
-              attachmentCount={item.attachments?.length || 0}
-              completedTodoCount={item.completedTodoCount || 0}
-              todoChecklist={item.todoChecklist || []}
-              onClick={() => handleClick(item)}
-            />
-          ))}
-        </div>
-        <div className="relative flex flex-col gap-6 mt-4 pl-4">
-          {allTasks?.map((item, index) => {
-            const isLocked = index > 0 && allTasks[index - 1].status !== "Completed";
-            const isCompleted = item.status === "Completed";
-            const isLast = index === allTasks.length - 1;
+        <div className="overflow-x-auto shadow-md">
+          <table className="min-w-full bg-white rounded-lg">
+            <thead>
+              <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-600">
+                <th className="p-3">Judul</th>
+                <th className="p-3">Deadline</th>
+                <th className="p-3">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allTasks.length === 0 ? (
+                <tr>
+                  <td className="p-4 text-center" colSpan="6">
+                    Tidak ada data.
+                  </td>
+                </tr>
+              ) : (
+                allTasks.map((task) => {
+                  let type = "";
+                  if (task.isPretest) type = "pretest";
+                  else if (task.isPostest) type = "postest";
+                  else if (task.isProblem) type = "problem";
+                  else if (task.isRefleksi) type = "refleksi";
+                  else if (task.isLo) type = "lo";
+                  else if (task.isKbk) type = "kbk";
+                  else if (task.type === "materi") type = "materi";
+                  else if (task.type === "glosarium") type = "glosarium";
+                  else if (task.taskType === "mindmap") type = "mindmap";
+                  else type = "";
 
-            return (
-              <div key={item._id} className="flex">
-                {/* Lingkaran indikator */}
-                <div className="absolute mt-4">
-                  <div className={`w-8 h-8 rounded-full z-10 ${isCompleted ? "bg-blue-500" : "bg-gray-300"}`} />
-                  {!isLast && <div className={`ml-2.5 -mt-1 w-3 h-16 z-0 ${isCompleted ? "bg-blue-500" : "bg-gray-300"}`} />}
-                </div>
-                <div className="w-full ml-12">
-                  <TaskCard2
-                    title={item.title}
-                    description={item.description}
-                    status={item.status}
-                    createdAt={item.createdAt}
-                    assignedTo={item.assignedTo}
-                    attachmentCount={item.attachments?.length || 0}
-                    completedTodoCount={item.completedTodoCount || 0}
-                    onClick={() => {
-                      if (!isLocked) handleClick(item);
-                    }}
-                    isLocked={isLocked}
-                    isCompleted={isCompleted}
-                  />
-                </div>
+                  return (
+                    <tr key={task._id} className="border-t">
+                      <td className="p-3 text-gray-500">{task.title}</td>
+                      <td className="p-3 text-gray-500">{new Date(task.dueDate).toLocaleDateString()}</td>
+                      <td className="p-3 space-x-4">
+                        <button
+                          onClick={() => {
+                            const targetPath = type ? `/admin/create-task/${type}` : "/admin/create-task";
+                            navigate(targetPath, { state: { taskId: task._id } });
+                          }}
+                          className="text-blue-600 cursor-pointer mr-3 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        {task.taskType !== "material" && (
+                          <button
+                            onClick={() => {
+                              if (type) navigate(`/admin/list-answer/${type}/${task._id}`);
+                            }}
+                            className="text-green-600 text-start md:text-center cursor-pointer hover:underline"
+                          >
+                            Lihat Jawaban
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)} className="fixed z-50 inset-0 overflow-y-auto bg-black/50">
+          <div className="flex items-center justify-center min-h-screen px-4">
+            <Dialog.Panel className="bg-white rounded-lg shadow p-6 max-w-md w-full">
+              <Dialog.Title className="text-lg font-semibold mb-4">Pilih Jenis Course</Dialog.Title>
+              <ul className="space-y-2">
+                {taskTypes.map((type) => (
+                  <li key={type}>
+                    <button onClick={() => handleCreateTask(type)} className="w-full text-left px-4 py-2 bg-blue-50 hover:bg-blue-100 rounded text-blue-800 cursor-pointer">
+                      {type}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="text-right mt-4">
+                <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:underline cursor-pointer">
+                  Batal
+                </button>
               </div>
-            );
-          })}
-        </div>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

@@ -15,14 +15,14 @@ const TaskCard2 = ({ title, description, status, createdAt, assignedTo, attachme
       }}
     >
       {isLocked && (
-        <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] z-20 flex items-center justify-center rounded-xl">
-          <span className="text-sm font-medium text-gray-500">Tugas sebelumnya belum selesai</span>
+        <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-xl">
+          <span className="text-sm font-medium text-black">Tugas sebelumnya belum selesai</span>
         </div>
       )}
 
       <div className="flex flex-col gap-1 z-10 relative">
         <div className="flex justify-center items-center">
-          <h3 className="text-lg font-semibold">{title}</h3>
+          <h3 className="text-lg font-semibold truncate md:whitespace-normal">{title}</h3>
         </div>
       </div>
     </div>
